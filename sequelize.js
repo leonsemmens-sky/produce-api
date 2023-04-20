@@ -1,17 +1,28 @@
 "use strict";
 
-const { DataTypes, Sequelize } = require("sequelize");
+const { DataTypes, Sequelize, Model } = require("sequelize");
 
-const sequelize = new Sequelize({
-	dialect: "sqlite",
-	logging: process.env.NODE_ENV !== "production" && console.log,
-	storage: "/etc/produce/db.sqlite",
-});
+class Produce extends Model {}
 
-const Produce = sequelize.define("Produce", {
-	name: DataTypes.STRING,
-	color: DataTypes.STRING,
-	type: DataTypes.STRING,
-});
+async function initDatabase() {
+	const { MYSQL_DB, MYSQL_USER, MYSQL_PW, MYSQL_HOST } = process.env;
+	const sequelize = new Sequelize(MYSQL_DB, MYSQL_USER, MYSQL_PW, {
+		dialect: "mysql",
+		host: MYSQL_HOST,
+	});
 
-module.exports = exports = { Produce, sequelize };
+	Produce.init(
+		{
+			name: DataTypes.STRING,
+			color: DataTypes.STRING,
+			type: DataTypes.STRING,
+		},
+		{
+			sequelize,
+		}
+	);
+
+	return sequelize;
+}
+
+module.exports = exports = { Produce, initDatabase };

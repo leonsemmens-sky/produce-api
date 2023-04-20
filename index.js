@@ -1,7 +1,8 @@
 "use strict";
 
 const express = require("express");
-const { Produce, sequelize } = require("./sequelize");
+const { Produce, initDatabase } = require("./sequelize");
+const waitPort = require("wait-port");
 
 const app = express();
 
@@ -80,7 +81,16 @@ app.delete("/:id", async (req, res, next) => {
 
 const PORT = 3000;
 
-app.listen(PORT, async () => {
-	await sequelize.sync();
-	console.log(`Listening on port ${PORT}`);
-});
+(async () => {
+	await waitPort({
+		host: "mysql",
+		port: 3306,
+	});
+
+	const sequelize = await initDatabase();
+
+	app.listen(PORT, async () => {
+		await sequelize.sync();
+		console.log(`Listening on port ${PORT}`);
+	});
+})();
